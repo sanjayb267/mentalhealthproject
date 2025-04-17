@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroVerse - Mind Metaverse</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        .cosmic-bg {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+        }
+        
+        .neon-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(78, 205, 196, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .neon-text {
+            text-shadow: 0 0 10px #4ECDC4;
+        }
+        
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            background: radial-gradient(circle, #4ECDC4 20%, transparent 70%);
+            border-radius: 50%;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+            100% { transform: translateY(0) rotate(360deg); }
+        }
+
+
+        @media (max-width: 640px) {
+        .text-6xl {
+            font-size: 2.5rem;
+        }
+        .neon-card {
+            margin: 0.5rem;
+            padding: 1rem;
+        }
+        #galaxy-view {
+            height: 250px;
+        }
+        .grid {
+            display: flex;
+            flex-direction: column;
+        }
+        .container {
+            padding: 0.5rem;
+        }
+    }
+    </style>
+</head>
+<body class="cosmic-bg text-white">
+    <!-- Animated Background Particles -->
+    <div id="particles"></div>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-16">
+            <h1 class="text-6xl font-bold mb-4 neon-text">NeuroVerse</h1>
+            <p class="text-xl opacity-75">Your Intergalactic Mental Health Companion</p>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Input Sector -->
+            <div class="neon-card p-6 col-span-2">
+                <div class="mb-6">
+                    <textarea id="mind-input" 
+                        class="w-full bg-transparent border-b-2 border-teal-400 text-xl p-4 focus:outline-none"
+                        placeholder="Transmit your thoughts to the cosmos..."
+                        rows="5"></textarea>
+                </div>
+                <button onclick="analyzeThoughts()" 
+                    class="w-full py-4 bg-teal-600 hover:bg-teal-500 rounded-xl text-lg font-bold transition-all">
+                    🚀 Launch Analysis
+                </button>
+            </div>
+
+            <!-- Quantum Results -->
+            <div class="neon-card p-6">
+                <h2 class="text-2xl mb-4 neon-text">Quantum Analysis</h2>
+                <div id="emotion-display" class="mb-6">
+                    <div class="text-4xl font-bold mb-2" id="emotion-label"></div>
+                    <div class="h-2 bg-gray-800 rounded-full">
+                        <div id="intensity-bar" class="h-2 bg-teal-500 rounded-full transition-all"></div>
+                    </div>
+                </div>
+                <div id="ai-response" class="text-lg opacity-90 italic"></div>
+            </div>
+
+            <!-- Galactic Visualization -->
+            <div class="neon-card p-6 col-span-3 h-96">
+                <div id="galaxy-view"></div>
+            </div>
+
+            <!-- Coping Constellations -->
+            <div class="neon-card p-6">
+                <h2 class="text-2xl mb-4 neon-text">Coping Constellations</h2>
+                <div id="strategies-list" class="space-y-3"></div>
+            </div>
+
+            <!-- Mind Timeline -->
+            <div class="neon-card p-6 col-span-2">
+                <h2 class="text-2xl mb-4 neon-text">Temporal Mind Map</h2>
+                <div id="history-timeline" class="space-y-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animated Particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for(let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.width = Math.random() * 5 + 2 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animation = `float ${5 + Math.random()*10}s infinite`;
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        // Quantum Analysis
+        async function analyzeThoughts() {
+            const text = document.getElementById('mind-input').value;
+            if(!text) return;
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({text})
+                });
+                
+                const data = await response.json();
+                
+                // Update UI
+                document.getElementById('emotion-label').textContent = 
+                    data.emotion.toUpperCase();
+                document.getElementById('intensity-bar').style.width = 
+                    (data.intensity * 100) + '%';
+                document.getElementById('ai-response').textContent = 
+                    `"${data.response}"`;
+                
+                // Update Strategies
+                const strategiesList = data.strategies.map(s => `
+                    <div class="p-3 bg-gray-800 rounded-lg hover:bg-teal-800 transition">
+                        ${s}
+                    </div>
+                `).join('');
+                document.getElementById('strategies-list').innerHTML = strategiesList;
+                
+                // Update Galaxy View
+                Plotly.newPlot('galaxy-view', data.visualization, {
+                    margin: { t: 0, b: 0 },
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    scene: {
+                        xaxis: { visible: false },
+                        yaxis: { visible: false },
+                        zaxis: { visible: false }
+                    }
+                });
+                
+                // Update Timeline
+                const timeline = data.history.map(entry => `
+                    <div class="p-4 bg-gray-800 rounded-lg">
+                        <div class="text-teal-400">${new Date(entry.timestamp).toLocaleTimeString()}</div>
+                        <div>${entry.text}</div>
+                    </div>
+                `).join('');
+                document.getElementById('history-timeline').innerHTML = timeline;
+                
+            } catch(error) {
+                console.error('Quantum flux detected:', error);
+            }
+        }
+    </script>
+</body>
+</html>
